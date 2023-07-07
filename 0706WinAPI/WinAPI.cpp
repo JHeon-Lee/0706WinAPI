@@ -1,6 +1,6 @@
 // WinAPI 쪽 다루려면
 // 솔루션 우클릭 -> 구성속성 -> 링커 -> 시스템 -> 하위시스템 --->>> 창으로 바꿔준다.
-// API : application program interface
+// API : application program interface(연결고리 느낌)
 // 요즘은 윈도우 창을 띄우기 위한 용도
 // API의 집합 : 다렉X
 //
@@ -27,8 +27,10 @@
 #include <string>
 
 LRESULT CALLBACK WndProc(HWND handle, UINT message, WPARAM wParam, LPARAM lParam); // stdcall
+// 윈도우에서 직접 호출
 
 int APIENTRY WinMain // APIENTRY : 시작점 명시
+// WinMain : 메세지 처리용
 (
 	HINSTANCE hInstance, // HINSTANCE : 윈도우 창 의미
 	HINSTANCE prevInstance,
@@ -37,17 +39,17 @@ int APIENTRY WinMain // APIENTRY : 시작점 명시
 	// 써주지 않아도 자동으로 잡힘
 )
 {
-	WNDCLASSA wnd_class; // 설명창
+	WNDCLASSA wnd_class; // 설명창(기본값)
 
 	wnd_class.cbClsExtra = 0; // 클래스를 위한 확장된 공간 사용할것인지
 	wnd_class.cbWndExtra = 0; // 윈도우를 위한 확장된 공간 사용할것인지
 	wnd_class.hbrBackground = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));// 배경 뒷쪽 색을 사용할것인지
 	// 우클릭 -> 정의로 이동 사용하면 좋음
 	wnd_class.hCursor = LoadCursor(nullptr, IDC_CROSS); // 커서 지정
-	wnd_class.hIcon = LoadIcon(nullptr, IDI_ERROR); // 작업표시줄 지정
+	wnd_class.hIcon = LoadIcon(nullptr, IDI_ERROR); // 작업표시창 지정
 	wnd_class.hInstance = hInstance;
-	wnd_class.lpfnWndProc = WndProc; // 창 프로시져 연결
-	wnd_class.lpszClassName = "First Window";
+	wnd_class.lpfnWndProc = WndProc; // 윈도우 프로시져 연결
+	wnd_class.lpszClassName = "First Window"; // 문서화 한 이름
 	wnd_class.lpszMenuName = nullptr;
 	wnd_class.style = CS_HREDRAW | CS_VREDRAW;
 
@@ -77,6 +79,7 @@ int APIENTRY WinMain // APIENTRY : 시작점 명시
 	ZeroMemory(&message, sizeof(MSG)); // 안전한 초기화
 
 	while (GetMessage(&message, nullptr, 0, 0))
+	// GetMessage : 동기식(메세지가 들어올때까지 기다림)
 	{
 		TranslateMessage(&message);
 		DispatchMessage(&message);
@@ -130,7 +133,8 @@ LRESULT CALLBACK WndProc(HWND handle, UINT message, WPARAM wParam, LPARAM lParam
 	//	if (wParam == VK_RIGHT) position.x += 10;
 	//	else if (wParam == VK_LEFT) position.x -= 10;
 
-	//	InvalidateRect(handle, nullptr, TRUE); // 화면 갱신이 필요한 상황에 사용
+	//	InvalidateRect(handle, nullptr, TRUE);
+	//  // 화면 갱신이 필요한 상황에 사용(WM_PAINT 호출)
 
 	//	break;
 
@@ -152,7 +156,7 @@ LRESULT CALLBACK WndProc(HWND handle, UINT message, WPARAM wParam, LPARAM lParam
 		InvalidateRect(handle, nullptr, TRUE);
 		break;
 
-	case WM_PAINT:
+	case WM_PAINT: // 최소화 하거나 가려졌을때 다시 그려주는 메세지
 	{
 		std::string str = "";
 		str += std::to_string(position.x); // 정수 -> 문자열
@@ -176,12 +180,14 @@ LRESULT CALLBACK WndProc(HWND handle, UINT message, WPARAM wParam, LPARAM lParam
 #pragma endregion
 	case WM_CLOSE:
 	case WM_DESTROY:
-		PostQuitMessage(0);
+		PostQuitMessage(0); // 올바르게 종료됨 --> 윈도우 종료
 		break;
 
 	default:
 		return DefWindowProcA(handle, message, wParam, lParam);
 	}
+
+	return 0;
 }
 
 // 내일까지 그림판 만들기
